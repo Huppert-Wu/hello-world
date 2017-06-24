@@ -24,7 +24,7 @@ typedef struct SNAKE
 }snake;
 
 snake *head, *tail;
-
+snake *zhuerchong;
 #define UP 1
 #define DOWN 2
 #define LEFT 3
@@ -32,7 +32,7 @@ snake *head, *tail;
 int direction = RIGHT;
 snake * food;
 int manyfood = 0;
-//bool IsExistFood = FALSE;
+bool IsExistChong = false;
 int score = 0;
 int endgamestatus = 0;
 int new_tail_l, new_tail_r, new_tail_t, new_tail_b;
@@ -52,6 +52,10 @@ int * insertnum(int *arr);
 void ranking();
 void deletefood(snake*p);
 snake* createfood();
+void judgechong();
+int eatechong();
+
+
 void main(int argc, char*argv[])
 {
 	food = (snake*)malloc(sizeof(snake));
@@ -181,7 +185,8 @@ void movesnake()
 	static double i = 1, j=0;
 	static int k = 0;
 	j = pow(1.5, -(i++));
-	k = (int)((1 - j)*50)/10;              //控制蛇速度
+	k = (int)((1 - j)*50)/10;   //控制蛇速度
+
 	while (p != NULL)
 	{
 		if (k <= 90)
@@ -418,8 +423,9 @@ void GameControl()
 		outtextxy(80, 20, GetScore);
 
 		movesnake();
-		if(manyfood<=score/10+1 && manyfood<=7)
+		if(manyfood<=score/10+1 && manyfood<=3)
 			judge();
+
 		if (eatefood() == 1)
 		{
 			//吃了苹果加长度
@@ -434,7 +440,9 @@ void GameControl()
 			setcolor(WHITE); setfillcolor(RED);
 			fillrectangle(newtail->left, newtail->top, newtail->right, newtail->bottom);
 		}
-
+		if(IsExistChong ==false)
+			judgechong();
+//		if(eatechong()==1)
 
 		//判断是否咬到自己和是否穿墙
 		if (biteself() == 1 || cantcrosswall() == 1)
@@ -442,6 +450,7 @@ void GameControl()
 			saveresults();
 			endgame();
 		}
+
 
 	}
 }
@@ -488,7 +497,7 @@ int * insertnum(int *arr)
 }
 void ranking()
 {
-	FILE *p;
+	FILE * p;
 	p = fopen("scoreresult.txt", "r");
 	RECT r = { 600, 50, 780, 100 };
 	drawtext(_T("Ranking"), &r, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
@@ -520,4 +529,54 @@ snake *createfood()
 	newfood->top = row * 20 + 80; newfood->bottom = newfood->top + 20;
 	newfood->next = NULL;
 	return newfood;
+}
+void judgechong()
+{
+	snake *next_apple;    //用于判断苹果
+	snake *p = head;      //用于判断蛇
+	zhuerchong=(snake*)malloc(sizeof(snake));
+	zhuerchong = createfood();
+	while (p != NULL)      //判断与蛇身每个节点是否重合
+	{
+		if (head->left == zhuerchong->left&& head->top == zhuerchong->top&&head->right == zhuerchong->right&&head->bottom == zhuerchong->bottom)
+		{
+			free(zhuerchong);
+			zhuerchong = createfood();
+			p = head;
+			continue;
+			//判断与之前的点是否重合
+		}
+		p = p->next;
+	}
+	next_apple = food->next;
+	while (next_apple != NULL)    //与其他苹果是否重合
+	{
+		if (next_apple->left == zhuerchong->left&& next_apple->top == zhuerchong->top&&next_apple->right == zhuerchong->right&&next_apple->bottom == zhuerchong->bottom)
+		{
+			//				ISSame = true;
+			free(zhuerchong);
+			zhuerchong = createfood();
+			next_apple = food->next;
+			continue;
+		}
+		next_apple = next_apple->next;
+	}
+
+	IMAGE imgchong;
+	loadimage(&imgchong, _T("res\\chong.jpg"));
+	putimage(zhuerchong->left + 1, zhuerchong->top + 1, &imgchong);
+	IsExistChong = true;
+}
+int eatechong()
+{
+	snake *p = head;
+
+	if ((p->left == zhuerchong->left) && (p->top == zhuerchong->top))
+	{
+		score -= 10;
+		free(zhuerchong);
+		IsExistChong = FALSE;
+		return 1;
+	}
+	return 0;
 }
