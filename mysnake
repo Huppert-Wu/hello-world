@@ -251,8 +251,18 @@ void judge()
 	snake *p = head;
 	newfood = createfood();
 	p = head;              //循环判断苹果不与之前节点重合
-//	bool ISSame = false;
-//	bool IsEated = false;
+
+     //判断zhuerchong是否重合
+
+	while(newfood->left==zhuerchong->left && newfood->top==zhuerchong->top)
+	{
+		//			ISSame = true;
+		free(newfood);
+		newfood = createfood();
+	}
+
+
+
 	while (p != NULL)      //判断与蛇身每个节点是否重合
 	{
 		if (head->left == newfood->left&& head->top == newfood->top&&head->right == newfood->right&&head->bottom == newfood->bottom)
@@ -442,8 +452,7 @@ void GameControl()
 		}
 		if(IsExistChong ==false)
 			judgechong();
-//		if(eatechong()==1)
-
+		eatechong();
 		//判断是否咬到自己和是否穿墙
 		if (biteself() == 1 || cantcrosswall() == 1)
 		{
@@ -553,7 +562,6 @@ void judgechong()
 	{
 		if (next_apple->left == zhuerchong->left&& next_apple->top == zhuerchong->top&&next_apple->right == zhuerchong->right&&next_apple->bottom == zhuerchong->bottom)
 		{
-			//				ISSame = true;
 			free(zhuerchong);
 			zhuerchong = createfood();
 			next_apple = food->next;
@@ -575,7 +583,7 @@ int eatechong()
 	{
 		score -= 10;
 		free(zhuerchong);
-		IsExistChong = FALSE;
+		IsExistChong = false;
 		return 1;
 	}
 	return 0;
